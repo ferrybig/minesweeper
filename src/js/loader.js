@@ -8,6 +8,6 @@
 		if (oldLoad) oldLoad();
 
 		console.log('Initizing...');
-		Canvas.init(document.getElementById('breakout'), Mouse.setMouseData);
+		Canvas.init(document.getElementById('game'), Mouse.setMouseData);
 	};
 })();
