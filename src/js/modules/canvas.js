@@ -3,11 +3,13 @@ const Canvas = (function() {
 	let canvas;
 	let graphics;
 	let lastFrameTime;
-	let targetPhysicsRate = 1000 / 60; // Run physics at 60 TPS
-	let targetFrameRate = 1000 / 60; // Run frames at 60 FPS
+	const targetPhysicsRate = 1000 / 30; // Run physics at 60 TPS
+	const targetFrameRate = 1000 / 30; // Run frames at 60 FPS
 	let tickCounter = 0;
 	let mouseClicked = false;
 	let mouseDown = false;
+	let width;
+	let height;
 	const loop = {
 		graphics: [],
 		update: []
@@ -54,11 +56,13 @@ const Canvas = (function() {
 		loop.update.push(func);
 	}
 
-	function init(elm, setMouseData) {
-		canvas = elm;
+	function init(_canvas, setMouseData) {
+		canvas = _canvas;
+		width = canvas.width;
+		height = canvas.height;
 		graphics = canvas.getContext('2d');
 		let lastDownTarget = canvas;
-		document.addEventListener(
+		addEvent(document,
 			'mousedown',
 			function(event) {
 				lastDownTarget = event.target;
@@ -76,7 +80,7 @@ const Canvas = (function() {
 			},
 			false
 		);
-		document.addEventListener(
+		addEvent(document,
 			'keydown',
 			function(event) {
 				if (lastDownTarget === canvas) {
@@ -85,14 +89,14 @@ const Canvas = (function() {
 			},
 			false
 		);
-		document.addEventListener(
+		addEvent(document,
 			'keyup',
 			function(event) {
 				var code = event.keyCode;
 			},
 			false
 		);
-		document.addEventListener(
+		addEvent(document,
 			'mousemove',
 			function(event) {
 				if (canvas === event.target) {
@@ -109,7 +113,14 @@ const Canvas = (function() {
 			},
 			false
 		);
+		addEvent(window,'resize',resize);
 		tick();
+		resize();
+	}
+	
+	function resize() {
+		 setWidth(canvas.offsetWidth);
+			setHeight(canvas.offsetHeight);
 	}
 
 	function tick() {
@@ -129,9 +140,41 @@ const Canvas = (function() {
 		requestAnimFrame(tick);
 	}
 
+	function getWidth() {
+		return width;
+	}
+
+	function getHeight() {
+		return height;
+	}
+
+	function setWidth(_width) {
+		width = _width;
+		canvas.width = width;
+	}
+
+	function setHeight(_height) {
+		height = _height;
+		canvas.height = height;
+	}
+	
+	function addEvent (object, type, callback) {
+		if (object === null || typeof (object) === 'undefined')
+			return;
+		if (object.addEventListener) {
+			object.addEventListener(type, callback, false);
+		} else if (object.attachEvent) {
+			object.attachEvent("on" + type, callback);
+		} else {
+			object["on" + type] = callback;
+		}
+	};
+
 	return Object.seal({
 		registerUpdateFunction,
 		registerGraphicsUpdate,
-		init
+		init,
+		getWidth,
+		getHeight
 	});
 })();
