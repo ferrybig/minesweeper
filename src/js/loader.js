@@ -2,13 +2,12 @@
 
 'use strict';
 
-(function () {
+(function() {
 	var oldLoad = window.onload;
-	window.onload = function () {
-		if (oldLoad)
-			oldLoad();
+	window.onload = function() {
+		if (oldLoad) oldLoad();
 
-		console.log("Initizing...");
+		console.log('Initizing...');
 		Canvas.init(document.getElementById('breakout'), Mouse.setMouseData);
 	};
-}());
+})();

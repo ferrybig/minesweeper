@@ -1,5 +1,5 @@
 'use strict';
-const Mouse = (function () {
+const Mouse = (function() {
 	let down = false;
 	let click = false;
 	let focus = false;
@@ -34,6 +34,11 @@ const Mouse = (function () {
 	}
 
 	return Object.seal({
-		setMouseData, getMouseDown, getMouseClick, getApplicationFocus, getX, getY
+		setMouseData,
+		getMouseDown,
+		getMouseClick,
+		getApplicationFocus,
+		getX,
+		getY
 	});
 })();
