@@ -48,6 +48,14 @@ const Board = (function() {
 		setNeigbourMines(nearby) {
 			this.nearby = nearby;
 		}
+
+		draw(graphics, x, y, scale) {
+			graphics.textAlign = 'center';
+			graphics.textBaseline = 'middle';
+			graphics.font = Math.round(0.7 * scale) + 'px serif';
+			graphics.fillText(this.mine ? '💣' : this.nearby, x + 0.5 * scale, y + 0.5 * scale);
+			graphics.strokeRect(x, y, scale, scale);
+		}
 	}
 
 	class Plane {
@@ -59,37 +67,36 @@ const Board = (function() {
 			this.cheatMines = [];
 			this.dummy = new Cell(-1, -1);
 			const randomGrid = [];
-			const sortedGrid = [];
 			const length = width * height;
 			let x = 0;
 			let y = 0;
 			for (let i = 0; i < length; i++) {
-				this.grid.push(new Cell(x, y, false));
+				const cell = new Cell(x, y, false);
+				this.grid.push(cell);
 				x++;
 				if (x >= width) {
 					x = 0;
 					y++;
 				}
-				randomGrid.push(Math.random());
-				sortedGrid.push(i);
+				randomGrid.push({ cell, random: Math.random() });
 			}
-			sortedGrid.sort((a, b) => randomGrid[a] < randomGrid[b]);
+			randomGrid.sort((a, b) => (a.random > b.random ? 1 : a.random < b.random ? -1 : 0));
 			let i = 0;
 			for (i = 0; i < mines; i++) {
-				this.setMineState(this.grid[sortedGrid[i]], true);
+				this.setMineState(randomGrid[i].cell, true);
 			}
 			const maxLoop = Math.min(i + 17, length);
 			for (; i < maxLoop; i++) {
-				this.cheatMines.push(this.grid[sortedGrid[i]]);
+				this.cheatMines.push(randomGrid[i].cell);
 			}
 		}
 
 		getWidth() {
-			return width;
+			return this.width;
 		}
 
-		getHeigth() {
-			return height;
+		getHeight() {
+			return this.height;
 		}
 
 		setMineState(cell, mine) {
@@ -115,13 +122,14 @@ const Board = (function() {
 
 	let board;
 	let minesLeft = -1;
+	let canvas;
 
 	const hasBoard = () => {
 		return board !== undefined;
 	};
 
 	const getBoard = () => {
-		return board !== undefined;
+		return board;
 	};
 
 	const newBoard = (width, height, mines) => {
@@ -130,11 +138,29 @@ const Board = (function() {
 	};
 
 	const draw = graphics => {
-		var scale = Math.min();
+		if (!hasBoard()) {
+			return;
+		}
+		const board = getBoard();
+		const scale = Math.min(canvas.getWidth() / board.getWidth(), canvas.getHeight() / board.getHeight());
+		const middleX = canvas.getWidth() / 2;
+		const middleY = canvas.getHeight() / 2;
+		const leftTopX = middleX - getBoard().getWidth() / 2 * scale;
+		const leftTopY = middleY - getBoard().getHeight() / 2 * scale;
+		graphics.fillStyle = 'lightgreen';
+		graphics.fillRect(leftTopX, leftTopY, board.getWidth() * scale, board.getHeight() * scale);
+		graphics.fillStyle = 'black';
+		for (let y = 0; y < board.getHeight(); y++) {
+			for (let x = 0; x < board.getWidth(); x++) {
+				board.getField(x, y).draw(graphics, leftTopX + x * scale, leftTopY + y * scale, scale);
+			}
+		}
 	};
 
-	const init = canvas => {
+	const init = _canvas => {
+		canvas = _canvas;
 		canvas.registerGraphicsUpdate(draw);
+		newBoard(16, 16, 40);
 	};
 
 	return Object.seal({

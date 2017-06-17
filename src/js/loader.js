@@ -1,4 +1,4 @@
-/* global Canvas, Mouse */
+/* global Canvas, Mouse, Board */
 
 'use strict';
 
@@ -8,6 +8,7 @@
 		if (oldLoad) oldLoad();
 
 		console.log('Initizing...');
+		Board.init(Canvas);
 		Canvas.init(document.getElementById('game'), Mouse.setMouseData);
 	};
 })();

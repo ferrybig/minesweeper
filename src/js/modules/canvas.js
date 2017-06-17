@@ -44,7 +44,7 @@ const Canvas = (function() {
 	 */
 	function draw() {
 		for (var i = 0; i < loop.graphics.length; i++) {
-			loop.graphics[i](tick);
+			loop.graphics[i](graphics, 0.0);
 		}
 	}
 
@@ -53,7 +53,7 @@ const Canvas = (function() {
 	}
 
 	function registerGraphicsUpdate(func) {
-		loop.update.push(func);
+		loop.graphics.push(func);
 	}
 
 	function init(_canvas, setMouseData) {
@@ -62,7 +62,8 @@ const Canvas = (function() {
 		height = canvas.height;
 		graphics = canvas.getContext('2d');
 		let lastDownTarget = canvas;
-		addEvent(document,
+		addEvent(
+			document,
 			'mousedown',
 			function(event) {
 				lastDownTarget = event.target;
@@ -80,7 +81,8 @@ const Canvas = (function() {
 			},
 			false
 		);
-		addEvent(document,
+		addEvent(
+			document,
 			'keydown',
 			function(event) {
 				if (lastDownTarget === canvas) {
@@ -89,14 +91,16 @@ const Canvas = (function() {
 			},
 			false
 		);
-		addEvent(document,
+		addEvent(
+			document,
 			'keyup',
 			function(event) {
 				var code = event.keyCode;
 			},
 			false
 		);
-		addEvent(document,
+		addEvent(
+			document,
 			'mousemove',
 			function(event) {
 				if (canvas === event.target) {
@@ -113,14 +117,14 @@ const Canvas = (function() {
 			},
 			false
 		);
-		addEvent(window,'resize',resize);
+		addEvent(window, 'resize', resize);
 		tick();
 		resize();
 	}
-	
+
 	function resize() {
-		 setWidth(canvas.offsetWidth);
-			setHeight(canvas.offsetHeight);
+		setWidth(canvas.offsetWidth);
+		setHeight(canvas.offsetHeight);
 	}
 
 	function tick() {
@@ -157,18 +161,17 @@ const Canvas = (function() {
 		height = _height;
 		canvas.height = height;
 	}
-	
-	function addEvent (object, type, callback) {
-		if (object === null || typeof (object) === 'undefined')
-			return;
+
+	function addEvent(object, type, callback) {
+		if (object === null || typeof object === 'undefined') return;
 		if (object.addEventListener) {
 			object.addEventListener(type, callback, false);
 		} else if (object.attachEvent) {
-			object.attachEvent("on" + type, callback);
+			object.attachEvent('on' + type, callback);
 		} else {
-			object["on" + type] = callback;
+			object['on' + type] = callback;
 		}
-	};
+	}
 
 	return Object.seal({
 		registerUpdateFunction,
