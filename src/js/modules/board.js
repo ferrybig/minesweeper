@@ -142,7 +142,7 @@ const Board = (function() {
 			return;
 		}
 		const board = getBoard();
-		const scale = Math.min(canvas.getWidth() / board.getWidth(), canvas.getHeight() / board.getHeight());
+		const scale = Math.min(canvas.getWidth() / (board.getWidth() + 2), canvas.getHeight() / (board.getHeight() + 2));
 		const middleX = canvas.getWidth() / 2;
 		const middleY = canvas.getHeight() / 2;
 		const leftTopX = middleX - getBoard().getWidth() / 2 * scale;
