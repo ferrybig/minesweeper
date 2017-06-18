@@ -38,7 +38,7 @@ const Mouse = (function() {
 	function getY() {
 		return y;
 	}
-	
+
 	function init(canvas) {
 		canvas.registerPhysicsUpdateLast(() => {
 			click = false;

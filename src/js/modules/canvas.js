@@ -55,7 +55,7 @@ const Canvas = (function() {
 	function registerPhysicsUpdate(func) {
 		loop.update.push(func);
 	}
-	
+
 	function registerPhysicsUpdateLast(func) {
 		loop.updateLast.push(func);
 	}
@@ -70,13 +70,35 @@ const Canvas = (function() {
 		height = canvas.height;
 		graphics = canvas.getContext('2d');
 		let lastDownTarget = canvas;
-		addEvent(
-			canvas,
-			'mousedown',
-			function(event) {
-				lastDownTarget = event.target;
-				mouseDown = true;
-				mouseClicked = true;
+		addEvent(canvas, 'mousedown', function(event) {
+			lastDownTarget = event.target;
+			mouseDown = true;
+			mouseClicked = true;
+			var mouseX, mouseY;
+			if (event.offsetX) {
+				mouseX = event.offsetX;
+				mouseY = event.offsetY;
+			} else if (event.layerX) {
+				mouseX = event.layerX;
+				mouseY = event.layerY;
+			}
+			setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, event.button !== 0);
+			event.preventDefault();
+		});
+		addEvent(canvas, 'contextmenu', function(event) {
+			event.preventDefault();
+			return false;
+		});
+		addEvent(document, 'keydown', function(event) {
+			if (lastDownTarget === canvas) {
+				const code = event.keyCode;
+			}
+		});
+		addEvent(document, 'keyup', function(event) {
+			var code = event.keyCode;
+		});
+		addEvent(document, 'mousemove', function(event) {
+			if (canvas === event.target) {
 				var mouseX, mouseY;
 				if (event.offsetX) {
 					mouseX = event.offsetX;
@@ -86,57 +108,8 @@ const Canvas = (function() {
 					mouseY = event.layerY;
 				}
 				setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, event.button !== 0);
-				event.preventDefault();
 			}
-		);
-		addEvent(
-			canvas,
-			'contextmenu',
-			function(event) {
-				event.preventDefault();
-				return false;
-			}
-		);
-		addEvent(
-			document,
-			'keydown',
-			function(event) {
-				if (lastDownTarget === canvas) {
-					const code = event.keyCode;
-				}
-			}
-		);
-		addEvent(
-			document,
-			'keyup',
-			function(event) {
-				var code = event.keyCode;
-			}
-		);
-		addEvent(
-			document,
-			'mousemove',
-			function(event) {
-				if (canvas === event.target) {
-					var mouseX, mouseY;
-					if (event.offsetX) {
-						mouseX = event.offsetX;
-						mouseY = event.offsetY;
-					} else if (event.layerX) {
-						mouseX = event.layerX;
-						mouseY = event.layerY;
-					}
-					setMouseData(
-						mouseX,
-						mouseY,
-						lastDownTarget === canvas,
-						mouseDown,
-						mouseClicked,
-						event.button !== 0
-					);
-				}
-			}
-		);
+		});
 		addEvent(window, 'resize', resize);
 		tick();
 		resize();
