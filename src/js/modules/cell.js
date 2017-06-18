@@ -44,15 +44,21 @@ class Cell {
 	}
 
 	draw(graphics, x, y, scale) {
+		if (this.state === State.OPEN) {
+			graphics.fillStyle = 'lightgreen';
+		} else {
+			graphics.fillStyle = 'green';
+		}
+		graphics.fillRect(x, y, scale, scale);
+		graphics.fillStyle = 'black';
 		let text;
 		switch (this.state) {
 			case State.OPEN:
 				if (this.mine) {
 					text = '💣';
-				} else {
-					text = this.nearby + '';
+				} else if (this.nearby !== 0) {
+					text = this.nearby;
 				}
-
 				break;
 			case State.FLAGGED:
 				text = '🚩';
