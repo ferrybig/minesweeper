@@ -42,6 +42,14 @@ class Plane {
 		return this.height;
 	}
 
+	hasFirstClicked() {
+		return this.firstClicked;
+	}
+
+	registerFirstClick() {
+		this.firstClicked = true;
+	}
+
 	setMineState(cell, mine) {
 		if (cell.isMine() === mine) return;
 		cell.setMine(mine);
@@ -94,4 +102,27 @@ class Plane {
 	}
 
 	triggerMineWave(x, y) {}
+
+	useMineMove(x, y) {
+		console.log('Minemove activated!');
+		this.registerFirstClick();
+		const fields = [
+			this.getField(x, y),
+			this.getField(x - 1, y),
+			this.getField(x + 1, y),
+
+			this.getField(x, y - 1),
+			this.getField(x - 1, y - 1),
+			this.getField(x + 1, y - 1),
+
+			this.getField(x, y + 1),
+			this.getField(x - 1, y + 1),
+			this.getField(x + 1, y + 1)
+		];
+		const length = Math.min(fields.length, this.cheatMines.length);
+		for (let i = 0; i < length; i++) {
+			this.setMineState(fields[i], false);
+			this.setMineState(this.cheatMines[i], true);
+		}
+	}
 }

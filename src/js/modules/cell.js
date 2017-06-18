@@ -72,16 +72,23 @@ class Cell {
 		graphics.strokeRect(x, y, scale, scale);
 	}
 
-	open(board) {
+	open(plane) {
 		if (this.state !== State.CLOSED) {
 			return;
 		}
 		this.state = State.OPEN;
 		if (this.nearby === 0) {
-			board.triggerOpenWave(this.x, this.y);
-		}
-		if (this.mine) {
-			board.triggerMineWave(this.x, this.y);
+			plane.triggerOpenWave(this.x, this.y);
+		} else {
+			if (!plane.hasFirstClicked()) {
+				plane.useMineMove(this.x, this.y);
+				if (this.nearby === 0) {
+					plane.triggerOpenWave(this.x, this.y);
+				}
+			}
+			if (this.mine) {
+				plane.triggerMineWave(this.x, this.y);
+			}
 		}
 	}
 
@@ -115,6 +122,7 @@ class Cell {
 					} else {
 						this.open(board);
 						this.singleClick = true;
+						return true;
 					}
 				}
 			} else {

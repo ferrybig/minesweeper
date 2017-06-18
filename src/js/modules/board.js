@@ -30,7 +30,9 @@ const Board = (function() {
 		scale = Math.min(canvas.getWidth() / (board.getWidth() + 2), canvas.getHeight() / (board.getHeight() + 2));
 		for (let y = 0; y < board.getHeight(); y++) {
 			for (let x = 0; x < board.getWidth(); x++) {
-				board.getField(x, y).update(board, leftTopX + x * scale, leftTopY + y * scale, scale);
+				if (board.getField(x, y).update(board, leftTopX + x * scale, leftTopY + y * scale, scale)) {
+					board.registerFirstClick();
+				}
 			}
 		}
 	};
