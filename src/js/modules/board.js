@@ -1,3 +1,5 @@
+/* global Mouse */
+
 'use strict';
 
 const Board = (function() {
@@ -50,11 +52,83 @@ const Board = (function() {
 		}
 
 		draw(graphics, x, y, scale) {
-			graphics.textAlign = 'center';
-			graphics.textBaseline = 'middle';
-			graphics.font = Math.round(0.7 * scale) + 'px serif';
-			graphics.fillText(this.mine ? '💣' : this.nearby, x + 0.5 * scale, y + 0.5 * scale);
+			let text;
+			switch (this.state) {
+				case state.OPEN:
+					if (this.mine) {
+						text = '💣';
+					} else {
+						text = this.nearby + '';
+					}
+
+					break;
+				case state.FLAGGED:
+					text = '🚩';
+
+					break;
+				case state.UNKNOWN:
+					text = '❓';
+
+					break;
+			}
+			if (text) {
+				graphics.textAlign = 'center';
+				graphics.textBaseline = 'middle';
+				graphics.font = Math.round(0.7 * scale) + 'px serif';
+				graphics.fillText(text, x + 0.5 * scale, y + 0.5 * scale);
+			}
 			graphics.strokeRect(x, y, scale, scale);
+		}
+
+		open(board) {
+			if (this.state !== state.CLOSED) {
+				return;
+			}
+			this.state = state.OPEN;
+			if (this.nearby === 0) {
+				board.triggerOpenWave(this.x, this.y);
+			}
+			if (this.mine) {
+				board.triggerMineWave(this.x, this.y);
+			}
+		}
+
+		tryFlag() {
+			switch (this.state) {
+				case state.CLOSED:
+					this.state = state.FLAGGED;
+
+					break;
+				case state.FLAGGED:
+					this.state = state.UNKNOWN;
+
+					break;
+				case state.UNKNOWN:
+					this.state = state.CLOSED;
+
+					break;
+			}
+		}
+
+		update(board, x, y, scale) {
+			if (Mouse.getMouseClick()) {
+				const mouseX = Mouse.getX();
+				const mouseY = Mouse.getY();
+				if (x <= mouseX && mouseX < x + scale && y <= mouseY && mouseY < y + scale) {
+					if (Mouse.getRight()) {
+						this.tryFlag();
+					} else {
+						if (this.singleClick) {
+							board.triggerOpenWave(this.x, this.y);
+						} else {
+							this.open(board);
+							this.singleClick = true;
+						}
+					}
+				} else {
+					this.singleClick = false;
+				}
+			}
 		}
 	}
 
@@ -118,55 +192,104 @@ const Board = (function() {
 				return this.dummy;
 			}
 		}
-	}
 
-	let board;
-	let minesLeft = -1;
-	let canvas;
-
-	const hasBoard = () => {
-		return board !== undefined;
-	};
-
-	const getBoard = () => {
-		return board;
-	};
-
-	const newBoard = (width, height, mines) => {
-		board = new Plane(width, height, mines);
-		minesLeft = mines;
-	};
-
-	const draw = graphics => {
-		if (!hasBoard()) {
-			return;
-		}
-		const board = getBoard();
-		const scale = Math.min(canvas.getWidth() / (board.getWidth() + 2), canvas.getHeight() / (board.getHeight() + 2));
-		const middleX = canvas.getWidth() / 2;
-		const middleY = canvas.getHeight() / 2;
-		const leftTopX = middleX - getBoard().getWidth() / 2 * scale;
-		const leftTopY = middleY - getBoard().getHeight() / 2 * scale;
-		graphics.fillStyle = 'lightgreen';
-		graphics.fillRect(leftTopX, leftTopY, board.getWidth() * scale, board.getHeight() * scale);
-		graphics.fillStyle = 'black';
-		for (let y = 0; y < board.getHeight(); y++) {
-			for (let x = 0; x < board.getWidth(); x++) {
-				board.getField(x, y).draw(graphics, leftTopX + x * scale, leftTopY + y * scale, scale);
+		triggerOpenWave(x, y) {
+			const cell = this.getField(x, y);
+			if (cell.state !== state.OPEN && cell.state !== state.CLOSED) {
 			}
+			window.setTimeout(() => {
+				const fields = [
+					this.getField(x - 1, y - 1),
+					this.getField(x, y - 1),
+					this.getField(x + 1, y - 1),
+
+					this.getField(x - 1, y),
+					this.getField(x + 1, y),
+
+					this.getField(x - 1, y + 1),
+					this.getField(x, y + 1),
+					this.getField(x + 1, y + 1)
+				];
+				let flags = 0;
+				for (let i = 0; i < fields.length; i++) {
+					if (fields[i].getState() === state.FLAGGED) {
+						flags++;
+					}
+				}
+				if (flags === cell.nearby) {
+					for (let i = 0; i < fields.length; i++) {
+						fields[i].open(this);
+					}
+				}
+			}, 50);
 		}
-	};
 
-	const init = _canvas => {
-		canvas = _canvas;
-		canvas.registerGraphicsUpdate(draw);
-		newBoard(16, 16, 40);
-	};
+		triggerMineWave(x, y) {}
+	}
+	return (function() {
+		let board;
+		let minesLeft = -1;
+		let canvas;
+		let scale = 1;
 
-	return Object.seal({
-		hasBoard,
-		getBoard,
-		newBoard,
-		init
-	});
+		const hasBoard = () => {
+			return board !== undefined;
+		};
+
+		const getBoard = () => {
+			return board;
+		};
+
+		const newBoard = (width, height, mines) => {
+			board = new Plane(width, height, mines);
+			minesLeft = mines;
+		};
+
+		const update = () => {
+			const board = getBoard();
+			const middleX = canvas.getWidth() / 2;
+			const middleY = canvas.getHeight() / 2;
+			const leftTopX = middleX - getBoard().getWidth() / 2 * scale;
+			const leftTopY = middleY - getBoard().getHeight() / 2 * scale;
+			scale = Math.min(canvas.getWidth() / (board.getWidth() + 2), canvas.getHeight() / (board.getHeight() + 2));
+			for (let y = 0; y < board.getHeight(); y++) {
+				for (let x = 0; x < board.getWidth(); x++) {
+					board.getField(x, y).update(board, leftTopX + x * scale, leftTopY + y * scale, scale);
+				}
+			}
+		};
+
+		const draw = graphics => {
+			if (!hasBoard()) {
+				return;
+			}
+			const board = getBoard();
+			const middleX = canvas.getWidth() / 2;
+			const middleY = canvas.getHeight() / 2;
+			const leftTopX = middleX - getBoard().getWidth() / 2 * scale;
+			const leftTopY = middleY - getBoard().getHeight() / 2 * scale;
+			graphics.fillStyle = 'lightgreen';
+			graphics.fillRect(leftTopX, leftTopY, board.getWidth() * scale, board.getHeight() * scale);
+			graphics.fillStyle = 'black';
+			for (let y = 0; y < board.getHeight(); y++) {
+				for (let x = 0; x < board.getWidth(); x++) {
+					board.getField(x, y).draw(graphics, leftTopX + x * scale, leftTopY + y * scale, scale);
+				}
+			}
+		};
+
+		const init = _canvas => {
+			canvas = _canvas;
+			canvas.registerGraphicsUpdate(draw);
+			canvas.registerPhysicsUpdate(update);
+			newBoard(16, 16, 40);
+		};
+
+		return Object.seal({
+			hasBoard,
+			getBoard,
+			newBoard,
+			init
+		});
+	})();
 })();

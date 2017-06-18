@@ -12,7 +12,8 @@ const Canvas = (function() {
 	let height;
 	const loop = {
 		graphics: [],
-		update: []
+		update: [],
+		updateLast: []
 	};
 
 	/**
@@ -32,8 +33,11 @@ const Canvas = (function() {
 	 * Runs a update tick of the physics calculations 
 	 */
 	function update() {
-		for (var i = 0; i < loop.update.length; i++) {
+		for (let i = 0; i < loop.update.length; i++) {
 			loop.update[i](tickCounter);
+		}
+		for (let i = 0; i < loop.updateLast.length; i++) {
+			loop.updateLast[i](tickCounter);
 		}
 		tickCounter++;
 		mouseClicked = false;
@@ -48,8 +52,12 @@ const Canvas = (function() {
 		}
 	}
 
-	function registerUpdateFunction(func) {
+	function registerPhysicsUpdate(func) {
 		loop.update.push(func);
+	}
+	
+	function registerPhysicsUpdateLast(func) {
+		loop.updateLast.push(func);
 	}
 
 	function registerGraphicsUpdate(func) {
@@ -63,7 +71,7 @@ const Canvas = (function() {
 		graphics = canvas.getContext('2d');
 		let lastDownTarget = canvas;
 		addEvent(
-			document,
+			canvas,
 			'mousedown',
 			function(event) {
 				lastDownTarget = event.target;
@@ -77,9 +85,17 @@ const Canvas = (function() {
 					mouseX = event.layerX;
 					mouseY = event.layerY;
 				}
-				setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked);
-			},
-			false
+				setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, event.button !== 0);
+				event.preventDefault();
+			}
+		);
+		addEvent(
+			canvas,
+			'contextmenu',
+			function(event) {
+				event.preventDefault();
+				return false;
+			}
 		);
 		addEvent(
 			document,
@@ -88,16 +104,14 @@ const Canvas = (function() {
 				if (lastDownTarget === canvas) {
 					const code = event.keyCode;
 				}
-			},
-			false
+			}
 		);
 		addEvent(
 			document,
 			'keyup',
 			function(event) {
 				var code = event.keyCode;
-			},
-			false
+			}
 		);
 		addEvent(
 			document,
@@ -112,10 +126,16 @@ const Canvas = (function() {
 						mouseX = event.layerX;
 						mouseY = event.layerY;
 					}
-					setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked);
+					setMouseData(
+						mouseX,
+						mouseY,
+						lastDownTarget === canvas,
+						mouseDown,
+						mouseClicked,
+						event.button !== 0
+					);
 				}
-			},
-			false
+			}
 		);
 		addEvent(window, 'resize', resize);
 		tick();
@@ -174,10 +194,11 @@ const Canvas = (function() {
 	}
 
 	return Object.seal({
-		registerUpdateFunction,
+		registerPhysicsUpdate,
 		registerGraphicsUpdate,
 		init,
 		getWidth,
-		getHeight
+		getHeight,
+		registerPhysicsUpdateLast
 	});
 })();

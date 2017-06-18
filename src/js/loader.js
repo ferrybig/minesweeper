@@ -9,6 +9,7 @@
 
 		console.log('Initizing...');
 		Board.init(Canvas);
+		Mouse.init(Canvas);
 		Canvas.init(document.getElementById('game'), Mouse.setMouseData);
 	};
 })();

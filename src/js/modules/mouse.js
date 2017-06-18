@@ -5,13 +5,15 @@ const Mouse = (function() {
 	let focus = false;
 	let x = 0;
 	let y = 0;
+	let right = false;
 
-	function setMouseData(_x, _y, _focus, _down, _click) {
+	function setMouseData(_x, _y, _focus, _down, _click, _right) {
 		x = _x;
 		y = _y;
 		focus = _focus;
 		down = _down;
 		click = _click;
+		right = _right;
 	}
 
 	function getMouseDown() {
@@ -20,6 +22,10 @@ const Mouse = (function() {
 
 	function getMouseClick() {
 		return click;
+	}
+
+	function getRight() {
+		return right;
 	}
 
 	function getApplicationFocus() {
@@ -32,13 +38,21 @@ const Mouse = (function() {
 	function getY() {
 		return y;
 	}
+	
+	function init(canvas) {
+		canvas.registerPhysicsUpdateLast(() => {
+			click = false;
+		});
+	}
 
 	return Object.seal({
 		setMouseData,
 		getMouseDown,
 		getMouseClick,
+		getRight,
 		getApplicationFocus,
 		getX,
-		getY
+		getY,
+		init
 	});
 })();
