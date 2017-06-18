@@ -1,4 +1,4 @@
-/* global State, Mouse */
+/* global State, Mouse, Particle */
 
 'use strict';
 
@@ -55,6 +55,15 @@ class Cell {
 		switch (this.state) {
 			case State.OPEN:
 				if (this.mine) {
+					if (!this.exploded) {
+						Particle.addParticle('explode', {
+							x: x + scale * 0.5,
+							y: y + scale * 0.5,
+							size: 3,
+							scale: scale / 13
+						});
+						this.exploded = true;
+					}
 					text = '💣';
 				} else if (this.nearby !== 0) {
 					text = this.nearby;

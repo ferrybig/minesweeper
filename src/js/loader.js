@@ -1,4 +1,4 @@
-/* global Canvas, Mouse, Board */
+/* global Canvas, Mouse, Board, Particle */
 
 'use strict';
 
@@ -10,6 +10,7 @@
 		console.log('Initizing...');
 		Board.init(Canvas);
 		Mouse.init(Canvas);
+		Particle.init(Canvas);
 		Canvas.init(document.getElementById('game'), Mouse.setMouseData);
 	};
 })();

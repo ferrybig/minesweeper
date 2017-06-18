@@ -73,6 +73,7 @@ class Plane {
 	triggerOpenWave(x, y) {
 		const cell = this.getField(x, y);
 		if (cell.state !== State.OPEN && cell.state !== State.CLOSED) {
+			return;
 		}
 		window.setTimeout(() => {
 			const fields = [
