@@ -69,6 +69,7 @@ const Canvas = (function() {
 		width = canvas.width;
 		height = canvas.height;
 		graphics = canvas.getContext('2d');
+		var mouseBtn = 0;
 		let lastDownTarget = canvas;
 		addEvent(canvas, 'mousedown', function(event) {
 			lastDownTarget = event.target;
@@ -82,7 +83,8 @@ const Canvas = (function() {
 				mouseX = event.layerX;
 				mouseY = event.layerY;
 			}
-			setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, event.button !== 0);
+			mouseBtn = event.button;
+			setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, mouseBtn !== 0);
 			event.preventDefault();
 		});
 		addEvent(canvas, 'contextmenu', function(event) {
@@ -107,7 +109,7 @@ const Canvas = (function() {
 					mouseX = event.layerX;
 					mouseY = event.layerY;
 				}
-				setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, event.button !== 0);
+				setMouseData(mouseX, mouseY, lastDownTarget === canvas, mouseDown, mouseClicked, mouseBtn !== 0);
 			}
 		});
 		addEvent(window, 'resize', resize);
